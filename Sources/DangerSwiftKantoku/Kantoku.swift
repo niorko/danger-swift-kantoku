@@ -8,6 +8,13 @@
 import Foundation
 import XCResultKit
 
+
+public struct KantokuResult {
+    public let coverage: CodeCoverage?
+    public let issues: ResultIssueSummaries?
+}
+
+
 public struct Kantoku {
     
     let workingDirectoryPath: String
@@ -87,13 +94,13 @@ extension Kantoku {
 
 extension Kantoku {
     
-    private func postIssuesIfNeeded(from resultFile: XCResultFile, configuration: XCResultParsingConfiguration) {
+    private func postIssuesIfNeeded(from resultFile: XCResultFile, configuration: XCResultParsingConfiguration) -> ResultIssueSummaries? {
         
         if configuration.needsIssues {
             
             guard let issues = resultFile.getInvocationRecord()?.issues else {
                 warn("Failed to get invocation record from \(resultFile.url.absoluteString)")
-                return
+                return nil
             }
 
             if configuration.parseBuildWarnings {
@@ -113,32 +120,37 @@ extension Kantoku {
                 post(issues.testFailureSummaries, as: .failure)
             }
             
+            return issues
         }
         
+        return nil
     }
     
-    private func postCoverageIfNeeded(from resultFile: XCResultFile, configuration: XCResultParsingConfiguration) {
+    private func postCoverageIfNeeded(from resultFile: XCResultFile, configuration: XCResultParsingConfiguration) -> CodeCoverage? {
         
         if let coverageAcceptanceDecision = configuration.codeCoverageRequirement.acceptanceDecision {
             
             guard let coverage = resultFile.getCodeCoverage() else {
                 warn("Failed to get coverage from \(resultFile.url.absoluteString)")
-                return
+                return nil
             }
             
             post(coverage, as: coverageAcceptanceDecision)
-            
+            return coverage
         }
         
+        return nil
     }
     
-    public func parseXCResultFile(at filePath: String, configuration: XCResultParsingConfiguration) {
+    @discardableResult
+    public func parseXCResultFile(at filePath: String, configuration: XCResultParsingConfiguration) -> KantokuResult {
         
         let resultFile = XCResultFile(url: .init(fileURLWithPath: filePath))
         
-        postIssuesIfNeeded(from: resultFile, configuration: configuration)
-        postCoverageIfNeeded(from: resultFile, configuration: configuration)
+        let issues = postIssuesIfNeeded(from: resultFile, configuration: configuration)
+        let coverage = postCoverageIfNeeded(from: resultFile, configuration: configuration)
         
+        return .init(coverage: coverage, issues: issues)
     }
     
 }
