@@ -94,7 +94,11 @@ extension Kantoku {
 
 extension Kantoku {
     
-    private func postIssuesIfNeeded(from resultFile: XCResultFile, configuration: XCResultParsingConfiguration) -> ResultIssueSummaries? {
+    private func postIssuesIfNeeded(
+        from resultFile: XCResultFile,
+        configuration: XCResultParsingConfiguration,
+        treatWarningsAsErrors: Bool
+    ) -> ResultIssueSummaries? {
         
         if configuration.needsIssues {
             
@@ -105,7 +109,7 @@ extension Kantoku {
 
             if configuration.parseBuildWarnings {
                 let filteredSummaries = summaries(of: issues.warningSummaries, filteredBy:  configuration.reportingFileType)
-                post(filteredSummaries, as: .warning)
+                post(filteredSummaries, as: treatWarningsAsErrors ? .failure : .warning)
             }
             
             if configuration.parseBuildErrors {
@@ -143,11 +147,15 @@ extension Kantoku {
     }
     
     @discardableResult
-    public func parseXCResultFile(at filePath: String, configuration: XCResultParsingConfiguration) -> KantokuResult {
+    public func parseXCResultFile(
+        at filePath: String,
+        configuration: XCResultParsingConfiguration,
+        treatWarningsAsErrors: Bool
+    ) -> KantokuResult {
         
         let resultFile = XCResultFile(url: .init(fileURLWithPath: filePath))
         
-        let issues = postIssuesIfNeeded(from: resultFile, configuration: configuration)
+        let issues = postIssuesIfNeeded(from: resultFile, configuration: configuration, treatWarningsAsErrors: treatWarningsAsErrors)
         let coverage = postCoverageIfNeeded(from: resultFile, configuration: configuration)
         
         return .init(coverage: coverage, issues: issues)
