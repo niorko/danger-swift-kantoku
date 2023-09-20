@@ -103,7 +103,7 @@ extension Kantoku {
         if configuration.needsIssues {
             
             guard let issues = resultFile.getInvocationRecord()?.issues else {
-                warn("Failed to get invocation record from \(resultFile.url.absoluteString)")
+                fail("Failed to get invocation record from \(resultFile.url.absoluteString)")
                 return nil
             }
 
