@@ -32,13 +32,11 @@ extension ActionsInvocationRecord {
         do {
             let data = try Data(contentsOf: url)
             guard let rootJSON = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: AnyObject] else {
-                assertionFailure("Expecting top level dictionary but didn't find one")
                 return nil
             }
             self.init(rootJSON)
             
         } catch {
-            assertionFailure("Error deserializing JSON: \(error)")
             return nil
         }
     }

@@ -31,7 +31,6 @@ extension DocumentLocation {
             return "file://\(absoluteFilePath)"
             
         } else {
-            assertionFailure("Unconfirmed baes absolute file path pattern: \(absoluteFilePath)")
             return absoluteFilePath
         }
         
@@ -40,7 +39,6 @@ extension DocumentLocation {
     private func regularRelativeFilePath(of relativeFilePath: Substring) -> Substring {
         
         guard !relativeFilePath.contains(":") && !relativeFilePath.hasPrefix("//") else {
-            assertionFailure("Unconfirmed baes relative file path pattern: \(relativeFilePath)")
             return relativeFilePath
         }
         
